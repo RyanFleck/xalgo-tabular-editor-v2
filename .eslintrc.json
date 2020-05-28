@@ -1,0 +1,20 @@
+{
+    "parser": "babel-eslint",
+    "extends": ["prettier", "eslint:recommended", "plugin:react/recommended"],
+    "plugins": ["prettier", "jest"],
+    "rules": {
+        "prettier/prettier": ["error"],
+        "jest/no-disabled-tests": "warn",
+        "jest/no-focused-tests": "error",
+        "jest/no-identical-title": "error",
+        "jest/prefer-to-have-length": "warn",
+        "jest/valid-expect": "error",
+        "max-classes-per-file": 0,
+        "no-console": 0,
+        "indent": ["warn", 4]
+    },
+    "env": {
+        "browser": true,
+        "jest/globals": true
+    }
+}

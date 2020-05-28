@@ -455,7 +455,7 @@ class SaveEditedCSV extends React.Component {
         const blob = new Blob([csv], { type: 'text/csv' });
         const fileName = 'custom.rule.csv';
 
-        var e = window.document.createElement('a');
+        const e = window.document.createElement('a');
         e.href = window.URL.createObjectURL(blob);
         e.download = fileName;
         document.body.appendChild(e);
@@ -481,9 +481,6 @@ class SaveEditedCSV extends React.Component {
 class LoadUserCSV extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            showUploadButton: false,
-        };
 
         this.click = this.click.bind(this);
         this.handleFile = this.handleFile.bind(this);
@@ -491,7 +488,14 @@ class LoadUserCSV extends React.Component {
 
     click() {
         console.log('LoadUserCSV');
-        this.setState({ showUploadButton: true });
+
+        const e = window.document.createElement('input');
+        e.id = 'file';
+        e.type = 'file';
+        e.onchange = (e) => this.handleFile(e);
+        document.body.appendChild(e);
+        e.click();
+        document.body.removeChild(e);
     }
 
     handleFile(event) {
@@ -504,11 +508,7 @@ class LoadUserCSV extends React.Component {
 
     render() {
         const text = 'Load Rule (*.rule.csv)';
-        if (this.state.showUploadButton) {
-            return <input id={'file'} type={'file'} onChange={this.handleFile} required></input>;
-        } else {
-            return <button onClick={this.click}>{text}</button>;
-        }
+        return <button onClick={this.click}>{text}</button>;
     }
 }
 

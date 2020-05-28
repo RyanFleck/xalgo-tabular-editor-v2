@@ -358,22 +358,44 @@ function genSelectColor(originalColor) {
     return `#${newVal.toString(16)}`;
 }
 
+/* ==================================================== */
+/* ==================================================== */
+/* ==================================================== */
+/* ==================================================== */
+/* ==================================================== */
+
 class Page extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            table: [],
+            table: {},
         };
+
+        this.replaceTableData = this.replaceTableData.bind(this);
+    }
+
+    replaceTableData(newTableData) {
+        console.log(newTableData);
+        this.setState({ table: newTableData });
     }
 
     render() {
+        const table_loaded = Object.keys(this.state.table).length !== 0;
+        const rst = 'Reset XTE Editor';
         return (
             <div>
                 <h1>XTE</h1>
                 <p>Xalgorithms Tabular Editor</p>
-                <Greeting tableLen={this.state.table.length} />
-                <LoadUserCSV />
-                <UseSampleCSV />
+                <Greeting tableLoaded={!table_loaded} />
+                {!table_loaded ? <UseSampleCSV saveTable={this.replaceTableData} /> : null}
+                {!table_loaded ? <LoadUserCSV saveTable={this.replaceTableData} /> : null}
+                {table_loaded ? <SaveEditedCSV table={this.state.table} /> : null}
+                {table_loaded ? (
+                    <button onClick={() => this.setState({ table: {} })}>{rst}</button>
+                ) : null}
+                {this.state.table.data
+                    ? this.state.table.data.map((value, key) => <p key={key}>{value}</p>)
+                    : null}
             </div>
         );
     }
@@ -384,13 +406,16 @@ class Page extends React.Component {
 class UseSampleCSV extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            table: [],
-        };
+        this.click = this.click.bind(this);
     }
 
     click() {
-        console.log('UseSampleCSV');
+        Papa.parse('/xa-singapore-example.csv', {
+            download: true,
+            complete: (results) => {
+                this.props.saveTable(results);
+            },
+        });
     }
 
     render() {
@@ -398,27 +423,72 @@ class UseSampleCSV extends React.Component {
     }
 }
 
+/* ==================================================== */
+
+class SaveEditedCSV extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.click = this.click.bind(this);
+    }
+
+    click() {
+        console.log('SaveCSV');
+    }
+
+    handleFile(event) {
+        Papa.parse(event.target.files[0], {
+            complete: (results) => {
+                this.props.saveTable(results);
+            },
+        });
+    }
+
+    render() {
+        return <button onClick={this.click}>Download Modified File</button>;
+    }
+}
+
+/* ==================================================== */
+
 class LoadUserCSV extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            table: [],
+            showUploadButton: false,
         };
+
+        this.click = this.click.bind(this);
+        this.handleFile = this.handleFile.bind(this);
     }
 
     click() {
         console.log('LoadUserCSV');
+        this.setState({ showUploadButton: true });
+    }
+
+    handleFile(event) {
+        Papa.parse(event.target.files[0], {
+            complete: (results) => {
+                this.props.saveTable(results);
+            },
+        });
     }
 
     render() {
-        return <button onClick={this.click}>Load Rule (*.rule.csv)</button>;
+        const text = 'Load Rule (*.rule.csv)';
+        if (this.state.showUploadButton) {
+            return <input id={'file'} type={'file'} onChange={this.handleFile} required></input>;
+        } else {
+            return <button onClick={this.click}>{text}</button>;
+        }
     }
 }
 
 /* ==================================================== */
 
 function Greeting(props) {
-    if (props.tableLen === 0) {
+    if (props.tableLoaded) {
         return (
             <p>
                 <b>{'Usage: '}</b>
@@ -426,7 +496,7 @@ function Greeting(props) {
             </p>
         );
     }
-    return;
+    return <p>Enjoy editing.</p>;
 }
 
 /* ==================================================== */

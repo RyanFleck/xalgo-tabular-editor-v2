@@ -364,11 +364,24 @@ function genSelectColor(originalColor) {
 /* ==================================================== */
 /* ==================================================== */
 
+const SECTIONS = [
+    'METADATA.MANAGEMENT',
+    'INPUT.SOURCES',
+    'INPUT.CONTEXT',
+    'INPUT.FILTERS',
+    'INPUT.CONDITIONS',
+    'OUTPUT.ASSERTIONS',
+    'OUTPUT.PURPOSE',
+    'OUTPUT.WEIGHT',
+    'METADATA.STANDARDS',
+];
+
 class Page extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             table: {},
+            fileName: '',
         };
 
         this.replaceTableData = this.replaceTableData.bind(this);
@@ -389,7 +402,9 @@ class Page extends React.Component {
                 <Greeting tableLoaded={!table_loaded} />
                 {!table_loaded ? <UseSampleCSV saveTable={this.replaceTableData} /> : null}
                 {!table_loaded ? <LoadUserCSV saveTable={this.replaceTableData} /> : null}
-                {table_loaded ? <SaveEditedCSV table={this.state.table} /> : null}
+                {table_loaded ? (
+                    <SaveEditedCSV table={this.state.table} filename={this.state.fileName} />
+                ) : null}
                 {table_loaded ? (
                     <button onClick={() => this.setState({ table: {} })}>{rst}</button>
                 ) : null}
@@ -434,6 +449,18 @@ class SaveEditedCSV extends React.Component {
 
     click() {
         console.log('SaveCSV');
+        const csv = Papa.unparse(this.props.table);
+        console.log(csv);
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const fileName = 'custom.rule.csv';
+
+        var e = window.document.createElement('a');
+        e.href = window.URL.createObjectURL(blob);
+        e.download = fileName;
+        document.body.appendChild(e);
+        e.click();
+        document.body.removeChild(e);
     }
 
     handleFile(event) {
@@ -497,6 +524,12 @@ function Greeting(props) {
         );
     }
     return <p>Enjoy editing.</p>;
+}
+
+/* ==================================================== */
+
+function arrayContains(elem, array) {
+    return array.indexOf(elem) !== -1;
 }
 
 /* ==================================================== */

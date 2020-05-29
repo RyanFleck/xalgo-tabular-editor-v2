@@ -45,3 +45,11 @@ button:active {
     box-shadow: 0 1px black;
     transform: translateY(4px);
 }
+
+#dumb-table,
+tr,
+td {
+    background: white;
+    border: 1px solid black;
+    border-collapse: collapse;
+}

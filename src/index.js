@@ -386,11 +386,12 @@ class Page extends React.Component {
 
         this.replaceTableData = this.replaceTableData.bind(this);
         this.setFileName = this.setFileName.bind(this);
+        this.renderDumbTable = this.setFileName.bind(this);
     }
 
-    replaceTableData(newTableData) {
+    replaceTableData(newTableData, newFileName) {
         console.log(newTableData);
-        this.setState({ table: newTableData });
+        this.setState({ table: newTableData, fileName: newFileName });
     }
 
     setFileName(newFileName) {
@@ -400,6 +401,7 @@ class Page extends React.Component {
     render() {
         const table_loaded = Object.keys(this.state.table).length !== 0;
         const rst = 'Reset XTE Editor';
+        const data = this.state.table.data;
         return (
             <div>
                 <h1>XTE</h1>
@@ -423,12 +425,32 @@ class Page extends React.Component {
                         <button onClick={() => this.setState({ table: {} })}>{rst}</button>
                     </div>
                 ) : null}
-                {this.state.table.data
-                    ? this.state.table.data.map((value, key) => <p key={key}>{value}</p>)
-                    : null}
+
+                {data ? <Table data={data} /> : null}
             </div>
         );
     }
+}
+
+function Table(props) {
+    return (
+        <table id={'dumb-table'}>
+            <tbody>
+                {props.data.map((val, rkey) => {
+                    if (val[0] === '') {
+                        return null;
+                    }
+                    return (
+                        <tr key={rkey}>
+                            {val.map((cell, ckey) => (
+                                <td key={ckey}>{cell}</td>
+                            ))}
+                        </tr>
+                    );
+                })}
+            </tbody>
+        </table>
+    );
 }
 
 /* ==================================================== */
@@ -443,8 +465,7 @@ class UseSampleCSV extends React.Component {
         Papa.parse('/xa-singapore-example.csv', {
             download: true,
             complete: (results) => {
-                this.props.saveTable(results);
-                this.props.setFileName('xa-singapore-example.rule.csv');
+                this.props.saveTable(results, 'xa-singapore-example.rule.csv');
             },
         });
     }
@@ -475,14 +496,6 @@ class SaveEditedCSV extends React.Component {
         document.body.removeChild(e);
     }
 
-    handleFile(event) {
-        Papa.parse(event.target.files[0], {
-            complete: (results) => {
-                this.props.saveTable(results);
-            },
-        });
-    }
-
     render() {
         return <button onClick={this.click}>Download Modified File</button>;
     }
@@ -511,8 +524,7 @@ class LoadUserCSV extends React.Component {
     handleFile(event) {
         Papa.parse(event.target.files[0], {
             complete: (results) => {
-                this.props.saveTable(results);
-                this.props.setFileName(event.target.files[0].name);
+                this.props.saveTable(results, event.target.files[0].name);
             },
         });
     }

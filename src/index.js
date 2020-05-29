@@ -381,15 +381,20 @@ class Page extends React.Component {
         super(props);
         this.state = {
             table: {},
-            fileName: '',
+            fileName: 'custom-thing.rule.csv',
         };
 
         this.replaceTableData = this.replaceTableData.bind(this);
+        this.setFileName = this.setFileName.bind(this);
     }
 
     replaceTableData(newTableData) {
         console.log(newTableData);
         this.setState({ table: newTableData });
+    }
+
+    setFileName(newFileName) {
+        this.setState({ fileName: newFileName });
     }
 
     render() {
@@ -399,14 +404,24 @@ class Page extends React.Component {
             <div>
                 <h1>XTE</h1>
                 <p>Xalgorithms Tabular Editor</p>
-                <Greeting tableLoaded={!table_loaded} />
-                {!table_loaded ? <UseSampleCSV saveTable={this.replaceTableData} /> : null}
-                {!table_loaded ? <LoadUserCSV saveTable={this.replaceTableData} /> : null}
-                {table_loaded ? (
-                    <SaveEditedCSV table={this.state.table} filename={this.state.fileName} />
+                <Greeting tableLoaded={!table_loaded} fileName={this.state.fileName} />
+                {!table_loaded ? (
+                    <div>
+                        <UseSampleCSV
+                            setFileName={this.setFileName}
+                            saveTable={this.replaceTableData}
+                        />
+                        <LoadUserCSV
+                            setFileName={this.setFileName}
+                            saveTable={this.replaceTableData}
+                        />
+                    </div>
                 ) : null}
                 {table_loaded ? (
-                    <button onClick={() => this.setState({ table: {} })}>{rst}</button>
+                    <div>
+                        <SaveEditedCSV table={this.state.table} fileName={this.state.fileName} />
+                        <button onClick={() => this.setState({ table: {} })}>{rst}</button>
+                    </div>
                 ) : null}
                 {this.state.table.data
                     ? this.state.table.data.map((value, key) => <p key={key}>{value}</p>)
@@ -429,6 +444,7 @@ class UseSampleCSV extends React.Component {
             download: true,
             complete: (results) => {
                 this.props.saveTable(results);
+                this.props.setFileName('xa-singapore-example.rule.csv');
             },
         });
     }
@@ -448,13 +464,9 @@ class SaveEditedCSV extends React.Component {
     }
 
     click() {
-        console.log('SaveCSV');
         const csv = Papa.unparse(this.props.table);
-        console.log(csv);
-
         const blob = new Blob([csv], { type: 'text/csv' });
-        const fileName = 'custom.rule.csv';
-
+        const fileName = this.props.fileName;
         const e = window.document.createElement('a');
         e.href = window.URL.createObjectURL(blob);
         e.download = fileName;
@@ -487,8 +499,6 @@ class LoadUserCSV extends React.Component {
     }
 
     click() {
-        console.log('LoadUserCSV');
-
         const e = window.document.createElement('input');
         e.id = 'file';
         e.type = 'file';
@@ -502,6 +512,7 @@ class LoadUserCSV extends React.Component {
         Papa.parse(event.target.files[0], {
             complete: (results) => {
                 this.props.saveTable(results);
+                this.props.setFileName(event.target.files[0].name);
             },
         });
     }
@@ -523,7 +534,11 @@ function Greeting(props) {
             </p>
         );
     }
-    return <p>Enjoy editing.</p>;
+    return (
+        <p>
+            Enjoy editing. Operating on <b>{props.fileName}</b>
+        </p>
+    );
 }
 
 /* ==================================================== */
